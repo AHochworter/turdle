@@ -21,14 +21,18 @@ var gameOverGuessCount = document.querySelector('#game-over-guesses-count');
 var gameOverGuessGrammar = document.querySelector('#game-over-guesses-plural');
 
 // Event Listeners
-window.addEventListener('load', setGame);
+window.addEventListener('load', fetchWords);
 
 for (var i = 0; i < inputs.length; i++) {
-  inputs[i].addEventListener('keyup', function() { moveToNextInput(event) });
+  inputs[i].addEventListener('keyup', function () {
+    moveToNextInput(event);
+  });
 }
 
 for (var i = 0; i < keyLetters.length; i++) {
-  keyLetters[i].addEventListener('click', function() { clickLetter(event) });
+  keyLetters[i].addEventListener('click', function () {
+    clickLetter(event);
+  });
 }
 
 guessButton.addEventListener('click', submitGuess);
@@ -39,6 +43,20 @@ viewGameButton.addEventListener('click', viewGame);
 
 viewStatsButton.addEventListener('click', viewStats);
 
+let words = [];
+
+//Fetch
+function fetchWords() {
+  fetch('http://localhost:3001/api/v1/words')
+    .then(response => response.json())
+    .then(data => {
+      words = data;
+      setGame();
+    })
+    .catch(error => {
+      throw error;
+    });
+}
 // Functions
 function setGame() {
   currentRow = 1;
@@ -46,14 +64,14 @@ function setGame() {
   updateInputPermissions();
 }
 
-function getRandomWord() {
+function getRandomWord(data) {
   var randomIndex = Math.floor(Math.random() * 2500);
   return words[randomIndex];
 }
 
 function updateInputPermissions() {
-  for(var i = 0; i < inputs.length; i++) {
-    if(!inputs[i].id.includes(`-${currentRow}-`)) {
+  for (var i = 0; i < inputs.length; i++) {
+    if (!inputs[i].id.includes(`-${currentRow}-`)) {
       inputs[i].disabled = true;
     } else {
       inputs[i].disabled = false;
@@ -66,7 +84,7 @@ function updateInputPermissions() {
 function moveToNextInput(e) {
   var key = e.keyCode || e.charCode;
 
-  if( key !== 8 && key !== 46 ) {
+  if (key !== 8 && key !== 46) {
     var indexOfNext = parseInt(e.target.id.split('-')[2]) + 1;
     inputs[indexOfNext].focus();
   }
@@ -77,7 +95,11 @@ function clickLetter(e) {
   var activeIndex = null;
 
   for (var i = 0; i < inputs.length; i++) {
-    if(inputs[i].id.includes(`-${currentRow}-`) && !inputs[i].value && !activeInput) {
+    if (
+      inputs[i].id.includes(`-${currentRow}-`) &&
+      !inputs[i].value &&
+      !activeInput
+    ) {
       activeInput = inputs[i];
       activeIndex = i;
     }
@@ -104,8 +126,8 @@ function submitGuess() {
 function checkIsWord() {
   guess = '';
 
-  for(var i = 0; i < inputs.length; i++) {
-    if(inputs[i].id.includes(`-${currentRow}-`)) {
+  for (var i = 0; i < inputs.length; i++) {
+    if (inputs[i].id.includes(`-${currentRow}-`)) {
       guess += inputs[i].value;
     }
   }
@@ -117,8 +139,10 @@ function compareGuess() {
   var guessLetters = guess.split('');
 
   for (var i = 0; i < guessLetters.length; i++) {
-
-    if (winningWord.includes(guessLetters[i]) && winningWord.split('')[i] !== guessLetters[i]) {
+    if (
+      winningWord.includes(guessLetters[i]) &&
+      winningWord.split('')[i] !== guessLetters[i]
+    ) {
       updateBoxColor(i, 'wrong-location');
       updateKeyColor(guessLetters[i], 'wrong-location-key');
     } else if (winningWord.split('')[i] === guessLetters[i]) {
@@ -129,14 +153,13 @@ function compareGuess() {
       updateKeyColor(guessLetters[i], 'wrong-key');
     }
   }
-
 }
 
 function updateBoxColor(letterLocation, className) {
   var row = [];
 
   for (var i = 0; i < inputs.length; i++) {
-    if(inputs[i].id.includes(`-${currentRow}-`)) {
+    if (inputs[i].id.includes(`-${currentRow}-`)) {
       row.push(inputs[i]);
     }
   }
@@ -202,7 +225,11 @@ function clearGameBoard() {
 
 function clearKey() {
   for (var i = 0; i < keyLetters.length; i++) {
-    keyLetters[i].classList.remove('correct-location-key', 'wrong-location-key', 'wrong-key');
+    keyLetters[i].classList.remove(
+      'correct-location-key',
+      'wrong-location-key',
+      'wrong-key'
+    );
   }
 }
 
@@ -223,7 +250,7 @@ function viewGame() {
   gameBoard.classList.remove('collapsed');
   rules.classList.add('collapsed');
   stats.classList.add('collapsed');
-  gameOverBox.classList.add('collapsed')
+  gameOverBox.classList.add('collapsed');
   viewGameButton.classList.add('active');
   viewRulesButton.classList.remove('active');
   viewStatsButton.classList.remove('active');
@@ -240,7 +267,7 @@ function viewStats() {
 }
 
 function viewGameOverMessage() {
-  gameOverBox.classList.remove('collapsed')
+  gameOverBox.classList.remove('collapsed');
   letterKey.classList.add('hidden');
   gameBoard.classList.add('collapsed');
 }
